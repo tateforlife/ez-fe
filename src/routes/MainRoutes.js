@@ -27,7 +27,7 @@ const MainRoutes = {
           element: <>Documents</>
         }
       ]
-    },
+    }
   ]
 };
 
