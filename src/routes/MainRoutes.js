@@ -3,6 +3,7 @@ import { lazy } from 'react';
 // project import
 import Loadable from 'components/Loadable';
 import MainLayout from 'layout/MainLayout';
+import AddPage from 'pages/add/index';
 
 // render - dashboard
 const DashboardDefault = Loadable(lazy(() => import('pages/dashboard')));
@@ -21,6 +22,10 @@ const MainRoutes = {
         {
           path: 'applications',
           element: <DashboardDefault />
+        },
+        {
+          path: 'applications/:id',
+          element: <AddPage />
         },
         {
           path: 'documents',

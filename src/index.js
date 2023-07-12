@@ -1,6 +1,9 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
+import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+// import download from 'downloadjs';
 
 // scroll bar
 import 'simplebar/src/simplebar.css';
@@ -16,6 +19,24 @@ import App from './App';
 import { store } from 'store';
 import reportWebVitals from './reportWebVitals';
 
+// const pdf = require('pdf-lib');
+// const { PDFDocument } = pdf;
+
+// async function modifyPdf() {
+//     const url = 'http://127.0.0.1:10000/pdf'
+//     const existingPdfBytes = await fetch(url).then(res => res.arrayBuffer())
+//     const pdfDoc = await PDFDocument.load(existingPdfBytes)
+//     const form = pdfDoc.getForm()
+//     const usernameField = form.getTextField('dropoffdate2')
+//     usernameField.setText('20.02.2001 12:00')
+//     form.flatten();
+
+//     const pdfBytes = await pdfDoc.save()
+//     // download(pdfBytes, "pdf-lib_modification_example.pdf", "application/pdf");
+// }
+
+// modifyPdf();
+
 // ==============================|| MAIN - REACT DOM RENDER  ||============================== //
 
 const container = document.getElementById('root');
@@ -24,7 +45,9 @@ root.render(
   <StrictMode>
     <ReduxProvider store={store}>
       <BrowserRouter basename="/">
-        <App />
+        <LocalizationProvider dateAdapter={AdapterMoment}>
+          <App />
+        </LocalizationProvider>
       </BrowserRouter>
     </ReduxProvider>
   </StrictMode>

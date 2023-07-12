@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 import React, { useState } from 'react';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { initializeApp } from 'firebase/app';
 import { collection, getDocs, getFirestore } from "firebase/firestore";
 
@@ -18,8 +18,7 @@ const db = getFirestore(app);
 
 // material-ui
 import { IconButton, Box, Link, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
-import KeyboardArrowRightOutlinedIcon from '@mui/icons-material/KeyboardArrowRightOutlined';
-
+import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 // third-party
 // import NumberFormat from 'react-number-format';
 
@@ -179,6 +178,7 @@ export default function OrderTable() {
   const [orderBy] = useState('trackingNo');
   const [selected] = useState([]);
   const [applications, setApplications] = useState([]);
+  const navigate = useNavigate();
 
   const isSelected = (trackingNo) => selected.indexOf(trackingNo) !== -1;
 
@@ -190,8 +190,6 @@ export default function OrderTable() {
         setApplications(applications);
       });
   };
-
-  console.log(applications)
 
   React.useEffect(() => {
     getApplications();
@@ -252,8 +250,8 @@ export default function OrderTable() {
                     <OrderStatus status={row.status} />
                   </TableCell>
                   <TableCell align="left">
-                  <IconButton aria-label="edit application">
-                    <KeyboardArrowRightOutlinedIcon />
+                  <IconButton aria-label="edit application" onClick={() => navigate(`/dashboard/applications/${row.id}`)}>
+                    <MoreHorizIcon />
                   </IconButton>
                   </TableCell>
                 </TableRow>
