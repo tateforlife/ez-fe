@@ -24,12 +24,8 @@ const MainRoutes = {
           element: <DashboardDefault />
         },
         {
-          path: 'applications/:id',
+          path: 'documents/:id',
           element: <AddPage />
-        },
-        {
-          path: 'documents',
-          element: <>Documents</>
         }
       ]
     }

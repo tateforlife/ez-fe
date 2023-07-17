@@ -1,24 +1,26 @@
 import React from 'react';
+import moment from 'moment';
 import { useParams } from "react-router-dom";
 import {
   Button,
   Grid,
   Typography,
   Box,
-  TextField,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel
 } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import moment from 'moment';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import { useForm } from 'react-hook-form';
+import download from 'downloadjs';
 
 import MainCard from 'components/MainCard';
 
 import { initializeApp } from 'firebase/app';
 import { collection, getDocs, getFirestore } from "firebase/firestore";
+import DatesLocations from './fields/dates';
+import Driver from './fields/driver';
+import Car from './fields/car';
+import Other from './fields/other';
+import { DD_MM_YYYY, LOCATIONS_MAP, YYYY_MM_DD } from 'utils/constants';
 
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_API_KEY,
@@ -32,172 +34,158 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-export const DATE_FORMAT = 'DD.MM.YYYY';
-export const LOCATIONS_MAP = {
-  1: 'Riga, Valguma iela 4a',
-  2: 'Riga International Airport RIX'
-};
-
-const DatesLocations = ({ document, setInputData, inputData }) => {
-  if (!Object.keys(inputData).length) return null;
-
-  return (
-    <MainCard content={false} sx={{ padding: '8px 16px' }}>
-      <Box
-        component="form"
-        sx={{
-          '& > :not(style)': { margin: '8px 0', width: '100%' },
-        }}
-        noValidate
-        autoComplete="off"
-      >
-        <Typography variant="h5">Dates/locations</Typography>
-        <TextField
-          disabled
-          label="Contract number"
-          value={inputData['contractNumber']}
-        />
-        <DatePicker
-          label="Pick up date"
-          value={inputData['pickupDate'] ? moment(inputData['pickupDate'], DATE_FORMAT) : moment(document.from, DATE_FORMAT)}
-          format={DATE_FORMAT}
-          onChange={pickupDate => setInputData(oldData => ({ ...oldData, ['pickupDate']: pickupDate.format(DATE_FORMAT) }))}
-        />
-        <DatePicker
-          label="Drop off date"
-          value={inputData['dropoffDate'] ? moment(inputData['dropoffDate'], DATE_FORMAT) : moment(document.to, DATE_FORMAT)}
-          format={DATE_FORMAT}
-          onChange={pickupDate => setInputData(oldData => ({ ...oldData, ['dropoffDate']: pickupDate.format(DATE_FORMAT) }))}
-        />
-        <FormControl>
-          <InputLabel>Pick up location</InputLabel>
-          <Select
-              value={inputData['pickupLocation'] || Number(document.delivery) || 1}
-              onChange={e => setInputData(oldData => ({ ...oldData, ['pickupLocation']: e.target.value }))}
-            >
-              <MenuItem value={1}>{LOCATIONS_MAP[1]}</MenuItem>
-              <MenuItem value={2}>{LOCATIONS_MAP[2]}</MenuItem>
-              <MenuItem value={3}>Custom</MenuItem>
-            </Select>
-        </FormControl>
-        {inputData['pickupLocation'] === 3
-          ? (
-            <TextField
-              value={inputData['customPickupLocation'] || ''}
-              onChange={e => setInputData(oldData => ({ ...oldData, ['customPickupLocation']: e.target.value }))}
-              label="Custom pick up location"
-            />
-          ) : null}
-        <FormControl>
-          <InputLabel>Drop off location</InputLabel>
-          <Select
-              value={inputData['dropoffLocation'] || Number(document.admission) || 1}
-              onChange={e => setInputData(oldData => ({ ...oldData, ['dropoffLocation']: e.target.value }))}
-            >
-              <MenuItem value={1}>{LOCATIONS_MAP[1]}</MenuItem>
-              <MenuItem value={2}>{LOCATIONS_MAP[2]}</MenuItem>
-              <MenuItem value={3}>Custom</MenuItem>
-            </Select>
-        </FormControl>
-        {inputData['dropoffLocation'] === 3
-          ? (
-            <TextField
-              value={inputData['customDropoffLocation'] || ''}
-              onChange={e => setInputData(oldData => ({ ...oldData, ['customDropoffLocation']: e.target.value }))}
-              label="Custom drop off location"
-            />
-          ) : null}
-      </Box>
-    </MainCard>
-  );
-};
-
-const getPayloadLocations = (inputData) => {
-  const {
-    pickupLocation,
-    dropoffLocation,
-    customPickupLocation,
-    customDropoffLocation
-  } = inputData;
-
-  const pickupLocationText = pickupLocation === 3
-    ? customPickupLocation
-    : LOCATIONS_MAP[pickupLocation];
-  const dropoffLocationText = dropoffLocation === 3
-    ? customDropoffLocation
-    : LOCATIONS_MAP[dropoffLocation];
-
-  return {
-    pickupLocation: pickupLocationText,
-    dropoffLocation: dropoffLocationText
-  };
-};
-
 const AddPage = () => {
   const { id } = useParams();
   const [document, setDocument] = React.useState({});
-  const [inputData, setInputData] = React.useState({});
 
-  const getApplications = () => {
-    getDocs(collection(db, "ez"))
+  const {
+    control,
+    handleSubmit,
+    setValue,
+    getValues,
+    watch
+  } = useForm();
+  const { delivery, admission } = watch();
+
+  const getDocuments = () => {
+    getDocs(collection(db, "documents"))
       .then((querySnapshot) => {
-        const applications = querySnapshot.docs.map((doc) => ({...doc.data(), id:doc.id }));
-        const documentById = applications.find(({ id: applicationId }) => id === applicationId);
+        const documents = querySnapshot.docs.map((doc) => ({...doc.data() }));
+        const documentById = documents.find(({ id: documentId }) => documentId == id);
+
+        console.log(documentById)
         setDocument(documentById);
-        setInputData({
-          contractNumber: `RDV/${documentById.carId}_${documentById.id}`,
-          pickupDate: documentById.from,
-          dropoffDate: documentById.to,
-          pickupLocation: Number(documentById.delivery),
-          dropoffLocation: Number(documentById.admission),
-          customPickupLocation: '',
-          customDropoffLocation: ''
-        })
+        Object.entries(documentById).forEach(
+          ([name, value]) => setValue(name, value));
+        // dates/locations
+        setValue('contractNumber', `RDV/${documentById.id}`);
+        setValue('from', moment(documentById.from, DD_MM_YYYY).format(DD_MM_YYYY));
+        setValue('to', moment(documentById.to, DD_MM_YYYY).format(DD_MM_YYYY));
+        setValue('delivery', Number(documentById.delivery));
+        setValue('admission', Number(documentById.admission));
       });
   };
 
   React.useEffect(() => {
-    getApplications();
+    getDocuments();
   }, []);
 
-  const onSaveClick = () => {
-    const locations = getPayloadLocations(inputData);
+  const onSaveClick = async (data) => {
+    const {customadmission, customdelivery, ...rest} = getValues();
 
     const payload = {
-      contractNumber: inputData['contractNumber'],
-      pickupDate: inputData['pickupDate'],
-      dropoffDate: inputData['dropoffDate'],
-      ...locations
+      ...rest,
+      id,
+      carMaxSpeed: 150,
+      otherDeposit: 300,
+      otherFuelLevel: '100%'
     };
 
     console.log(payload)
+    await fetch(`http://127.0.0.1:10000/api/saveDoc`, {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload)
+    });
   };
 
+  const onDownloadClick = async () => {
+    const { contractNumber } = getValues();
+
+    const pdfBytes = await fetch('http://127.0.0.1:10000/downloadPdfById', {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ contractNumber })
+    }).then(res => {
+      if (res.status === 200) {
+        return res.arrayBuffer();
+      }
+
+      return null;
+    });
+
+    if (pdfBytes) {
+      download(pdfBytes, `${contractNumber}`, "application/pdf");
+    } else {
+      console.log('file not present')
+    }
+  };
+
+  if (!Object.keys(document).length) return null;
+
   return (
-    <Grid container rowSpacing={2.5}>
-      <Grid item xs={12} md={12} lg={12}>
-        <Grid container justifyContent="space-between">
-          <Typography variant="h3">Add document #{id}</Typography>
-          <Button
-            startIcon={<SaveIcon />}
-            color="success"
-            variant="contained"
-            onClick={() => onSaveClick()}
-          >
-            Save
-          </Button>
+    <form onSubmit={handleSubmit(onSaveClick)}>
+      <Grid container rowSpacing={2.5}>
+        <Grid item xs={12} md={12} lg={12}>
+          <Grid container justifyContent="space-between">
+            <Typography variant="h3">Edit document #{id}</Typography>
+            <Box
+              sx={{
+                '& > :not(style)': { margin: '0 4px' },
+              }}
+            >
+              <Button
+                startIcon={<PictureAsPdfIcon />}
+                variant="contained"
+                onClick={onDownloadClick}
+              >
+                Contract
+              </Button>
+              <Button
+                startIcon={<PictureAsPdfIcon />}
+                variant="contained"
+                onClick={onDownloadClick}
+              >
+                Invoice
+              </Button>
+              <Button
+                startIcon={<SaveIcon />}
+                color="success"
+                variant="contained"
+                type="submit"
+              >
+                Save
+              </Button>
+            </Box>
+          </Grid>
+        </Grid>
+        <Grid item xs={12} md={12} lg={12}>
+          <MainCard content={false} sx={{ padding: '20px 16px' }}>
+            <Grid container columnSpacing={2} rowSpacing={2}>
+              <Grid item xs={12} md={6} lg={3}>
+                <Box>
+                  <DatesLocations
+                    document={document}
+                    control={control}
+                    delivery={delivery}
+                    admission={admission}
+                  />
+                </Box>
+                <Box sx={{ marginTop: '16px' }}>
+                  <Other control={control} />
+                </Box>
+              </Grid>
+              <Grid item xs={12} md={6} lg={9}>
+                  <Driver control={control} />
+                  <Box
+                    component="div"
+                    sx={{
+                      '& > :not(style)': { marginTop: '16px', width: '100%' },
+                    }}
+                    autoComplete="off"
+                  >
+                    <Car control={control} />
+                  </Box>
+              </Grid>
+            </Grid>
+          </MainCard>
         </Grid>
       </Grid>
-      <Grid item xs={12} md={12} lg={12}>
-        <MainCard content={false} sx={{ padding: '20px 16px' }}>
-          <Grid container>
-            <Grid item xs={12} md={6} lg={3}>
-              <DatesLocations document={document} setInputData={setInputData} inputData={inputData} />
-            </Grid>
-          </Grid>
-        </MainCard>
-      </Grid>
-    </Grid>
+    </form>
   );
 };
 

@@ -3,6 +3,8 @@ import React, { useState } from 'react';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { initializeApp } from 'firebase/app';
 import { collection, getDocs, getFirestore } from "firebase/firestore";
+import moment from 'moment';
+import { DD_MM_YYYY, YYYY_MM_DD } from 'utils/constants';
 
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_API_KEY,
@@ -18,7 +20,8 @@ const db = getFirestore(app);
 
 // material-ui
 import { IconButton, Box, Link, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
-import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
+import EditIcon from '@mui/icons-material/Edit';
+import NoteAddIcon from '@mui/icons-material/NoteAdd';
 // third-party
 // import NumberFormat from 'react-number-format';
 
@@ -195,6 +198,21 @@ export default function OrderTable() {
     getApplications();
   }, []);
 
+  const createNewDoc = async (payload) => {
+    const rawResponse = await fetch('http://127.0.0.1:10000/api/createDoc', {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const content = await rawResponse.json();
+    navigate(`/dashboard/documents/${content.id}`)
+  };
+
+  console.log(moment('2023-07-15 12:00'))
+
   return (
     <Box>
       <TableContainer
@@ -241,8 +259,8 @@ export default function OrderTable() {
                       {row.id}
                     </Link>
                   </TableCell>
-                  <TableCell align="left">{row.from}</TableCell>
-                  <TableCell align="left">{row.to}</TableCell>
+                  <TableCell align="left">{moment(row.from, DD_MM_YYYY).format(DD_MM_YYYY)}</TableCell>
+                  <TableCell align="left">{moment(row.to, DD_MM_YYYY).format(DD_MM_YYYY)}</TableCell>
                   <TableCell align="left">{row.username}</TableCell>
                   <TableCell align="left">{row.tel}</TableCell>
                   <TableCell align="left">{row.car}</TableCell>
@@ -250,8 +268,11 @@ export default function OrderTable() {
                     <OrderStatus status={row.status} />
                   </TableCell>
                   <TableCell align="left">
-                  <IconButton aria-label="edit application" onClick={() => navigate(`/dashboard/applications/${row.id}`)}>
-                    <MoreHorizIcon />
+                  <IconButton aria-label="change application status" onClick={() => navigate(`/dashboard/applications/${row.id}`)}>
+                    <EditIcon />
+                  </IconButton>
+                  <IconButton aria-label="create new doc" onClick={() => createNewDoc(row)}>
+                    <NoteAddIcon />
                   </IconButton>
                   </TableCell>
                 </TableRow>
