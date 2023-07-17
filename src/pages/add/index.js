@@ -2,11 +2,14 @@ import React from 'react';
 import moment from 'moment';
 import { useParams } from "react-router-dom";
 import {
+  Snackbar,
+  Alert,
   Button,
   Grid,
   Typography,
   Box,
 } from '@mui/material';
+import LoadingButton from '@mui/lab/LoadingButton';
 import SaveIcon from '@mui/icons-material/Save';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import { useForm } from 'react-hook-form';
@@ -37,6 +40,12 @@ const db = getFirestore(app);
 const AddPage = () => {
   const { id } = useParams();
   const [document, setDocument] = React.useState({});
+  const [isSaveLoading, setSaveLoading] = React.useState(false);
+  const [alert, setAlert] = React.useState({
+    type: '',
+    message: '',
+    visible: false,
+  });
 
   const {
     control,
@@ -82,12 +91,20 @@ const AddPage = () => {
     };
 
     console.log(payload)
+    setSaveLoading(true);
     await fetch(`http://127.0.0.1:10000/api/saveDoc`, {
       method: 'POST',
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(payload)
+    }).then(_ => {
+      setSaveLoading(false);
+      setAlert({
+        visible: true,
+        type: 'success',
+        message: 'Data is saved successfully!'
+      })
     });
   };
 
@@ -119,6 +136,11 @@ const AddPage = () => {
 
   return (
     <form onSubmit={handleSubmit(onSaveClick)}>
+      <Snackbar anchorOrigin={{ vertical: 'top', horizontal: 'center' }} open={alert.visible} autoHideDuration={5000}>
+        <Alert onClose={() => setAlert({ visible: false, message: alert.message })} severity={alert.type} sx={{ width: '100%' }}>
+          {alert.message}
+        </Alert>
+      </Snackbar>
       <Grid container rowSpacing={2.5}>
         <Grid item xs={12} md={12} lg={12}>
           <Grid container justifyContent="space-between">
@@ -142,14 +164,16 @@ const AddPage = () => {
               >
                 Invoice
               </Button>
-              <Button
-                startIcon={<SaveIcon />}
+              <LoadingButton
+                loading={isSaveLoading}
                 color="success"
+                loadingPosition="start"
+                startIcon={<SaveIcon />}
                 variant="contained"
                 type="submit"
               >
                 Save
-              </Button>
+              </LoadingButton>
             </Box>
           </Grid>
         </Grid>
