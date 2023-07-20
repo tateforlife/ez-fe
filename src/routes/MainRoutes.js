@@ -5,8 +5,8 @@ import Loadable from 'components/Loadable';
 import MainLayout from 'layout/MainLayout';
 import AddPage from 'pages/add/index';
 
-// render - dashboard
 const DashboardDefault = Loadable(lazy(() => import('pages/dashboard')));
+const DocumentsList = Loadable(lazy(() => import('pages/dashboard/documents')));
 
 const MainRoutes = {
   path: '/',
@@ -22,6 +22,10 @@ const MainRoutes = {
         {
           path: 'applications',
           element: <DashboardDefault />
+        },
+        {
+          path: 'documents',
+          element: <DocumentsList />
         },
         {
           path: 'documents/:id',

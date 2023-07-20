@@ -21,7 +21,6 @@ const db = getFirestore(app);
 // material-ui
 import { IconButton, Box, Link, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
-import NoteAddIcon from '@mui/icons-material/NoteAdd';
 // third-party
 // import NumberFormat from 'react-number-format';
 
@@ -140,22 +139,14 @@ const OrderStatus = ({ status }) => {
   let title;
 
   switch (status) {
-    case 'created':
-      color = 'primary';
-      title = 'Created';
-      break;
-    case 'approved':
-      color = 'success';
-      title = 'Approved';
-      break;
-    case 'declined':
+    case false:
       color = 'error';
-      title = 'Declined';
+      title = 'Not Signed';
       break;
-      case 'waiting':
-        color = 'warning';
-        title = 'Waiting';
-        break;
+    case true:
+      color = 'success';
+      title = 'Signed';
+      break;
     default:
       color = 'primary';
       title = 'None';
@@ -176,7 +167,7 @@ OrderStatus.propTypes = {
 // ==============================|| ORDER TABLE ||============================== //
 
 
-export default function OrderTable() {
+export default function DocumentsTable() {
   const [order] = useState('asc');
   const [orderBy] = useState('trackingNo');
   const [selected] = useState([]);
@@ -185,33 +176,18 @@ export default function OrderTable() {
 
   const isSelected = (trackingNo) => selected.indexOf(trackingNo) !== -1;
 
-  const getApplications = () => {
-    getDocs(collection(db, "ez"))
+  const getDocuments = () => {
+    getDocs(collection(db, "documents"))
       .then((querySnapshot)=>{               
         const applications = querySnapshot.docs
-        .map((doc) => ({...doc.data(), id:doc.id }));
+        .map((doc) => ({...doc.data() }));
         setApplications(applications);
       });
   };
 
   React.useEffect(() => {
-    getApplications();
+    getDocuments();
   }, []);
-
-  const createNewDoc = async (payload) => {
-    const rawResponse = await fetch('https://ez-be.onrender.com/api/createDoc', {
-      method: 'POST',
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload)
-    });
-
-    const content = await rawResponse.json();
-    navigate(`/dashboard/documents/${content.id}`)
-  };
-
-  console.log(moment('2023-07-15 12:00'))
 
   return (
     <Box>
@@ -265,14 +241,11 @@ export default function OrderTable() {
                   <TableCell align="left">{row.tel}</TableCell>
                   <TableCell align="left">{row.car}</TableCell>
                   <TableCell align="left">
-                    <OrderStatus status={row.status} />
+                    <OrderStatus status={!!row.isSigned} />
                   </TableCell>
                   <TableCell align="left">
-                  <IconButton aria-label="change application status" onClick={() => navigate(`/dashboard/applications/${row.id}`)}>
+                  <IconButton aria-label="change application status" onClick={() => navigate(`/dashboard/documents/${row.id}`)}>
                     <EditIcon />
-                  </IconButton>
-                  <IconButton aria-label="create new doc" onClick={() => createNewDoc(row)}>
-                    <NoteAddIcon />
                   </IconButton>
                   </TableCell>
                 </TableRow>

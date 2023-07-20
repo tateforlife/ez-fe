@@ -124,19 +124,6 @@ const Driver = ({ control }) => {
                 />
                 <Controller
                   control={control}
-                  name="passOriginCountry"
-                  render={({
-                    field: { onChange, value = '' },
-                }) => (
-                    <TextField
-                      label="Passport origin country"
-                      value={value}
-                      onChange={onChange}
-                    />
-                  )}
-                />
-                <Controller
-                  control={control}
                   name="passCountry"
                   render={({
                     field: { onChange, value = '' },
