@@ -1,4 +1,3 @@
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import moment from 'moment';
 import {
     Typography,
@@ -8,7 +7,6 @@ import {
 } from '@mui/material';
 import MainCard from '../../../components/MainCard';
 import { Controller } from 'react-hook-form';
-import { DD_MM_YYYY } from 'utils/constants';
 
 const Driver = ({ control }) => {  
     return (
@@ -50,11 +48,10 @@ const Driver = ({ control }) => {
                   render={({
                     field: { onChange, value = '' },
                 }) => (
-                    <DatePicker
+                    <TextField
                       label="Date of birth"
-                      value={value ? moment(value, DD_MM_YYYY) : null}
-                      format={DD_MM_YYYY}
-                      onChange={change => onChange(change.format(DD_MM_YYYY))}
+                      value={value}
+                      onChange={onChange}
                     />
                   )}
                 />
@@ -114,11 +111,10 @@ const Driver = ({ control }) => {
                   render={({
                     field: { onChange, value = '' },
                 }) => (
-                    <DatePicker
+                    <TextField
                       label="Passport expiration date"
-                      value={value ? moment(value, DD_MM_YYYY) : null}
-                      format={DD_MM_YYYY}
-                      onChange={change => onChange(change.format(DD_MM_YYYY))}
+                      value={value}
+                      onChange={onChange}
                     />
                   )}
                 />
@@ -178,11 +174,10 @@ const Driver = ({ control }) => {
                   render={({
                     field: { onChange, value = '' },
                 }) => (
-                    <DatePicker
+                    <TextField
                       label="License expiration date"
-                      value={value ? moment(value, DD_MM_YYYY) : null}
-                      format={DD_MM_YYYY}
-                      onChange={change => onChange(change.format(DD_MM_YYYY))}
+                      value={value}
+                      onChange={onChange}
                     />
                   )}
                 />

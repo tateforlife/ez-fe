@@ -13,6 +13,7 @@ import {
 import LoadingButton from '@mui/lab/LoadingButton';
 import SaveIcon from '@mui/icons-material/Save';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import DrawIcon from '@mui/icons-material/Draw';
 import { useForm } from 'react-hook-form';
 import download from 'downloadjs';
 
@@ -26,6 +27,7 @@ import Car from './fields/car';
 import Other from './fields/other';
 import { DD_MM_YYYY } from 'utils/constants';
 import Dot from 'components/@extended/Dot';
+import SignDialog from './dialog';
 
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_API_KEY,
@@ -38,6 +40,10 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+
+import { getStorage, ref, uploadString } from "firebase/storage";
+
+const storage = getStorage();
 
 const OrderStatus = ({ status }) => {
   let color;
@@ -69,6 +75,7 @@ const AddPage = () => {
   const { id } = useParams();
   const [document, setDocument] = React.useState({});
   const [isSaveLoading, setSaveLoading] = React.useState(false);
+  const [isDialogOpen, setDialogOpen] = React.useState(false);
   const [alert, setAlert] = React.useState({
     type: 'success',
     message: '',
@@ -95,9 +102,9 @@ const AddPage = () => {
         Object.entries(documentById).forEach(
           ([name, value]) => setValue(name, value));
         // dates/locations
-        setValue('contractNumber', `RDV/${documentById.id}`);
-        setValue('from', moment(documentById.from, DD_MM_YYYY).format(DD_MM_YYYY));
-        setValue('to', moment(documentById.to, DD_MM_YYYY).format(DD_MM_YYYY));
+        setValue('contractNumber', documentById.contractNumber);
+        setValue('from', documentById.from);
+        setValue('to', documentById.to);
         setValue('delivery', Number(documentById.delivery));
         setValue('admission', Number(documentById.admission));
       });
@@ -145,12 +152,13 @@ const AddPage = () => {
   };
 
   const onDownloadContract = async () => {
+    console.log(document)
     const pdfBytes = await fetch('https://ez-be.onrender.com/api/downloadContract', {
       method: 'POST',
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ id: document.id })
+      body: JSON.stringify({ id: document.id, contractNumber: document.contractNumber })
     }).then(res => {
       if (res.status === 200) {
         return res.arrayBuffer();
@@ -160,7 +168,7 @@ const AddPage = () => {
     });
 
     if (pdfBytes) {
-      download(pdfBytes, `RDV-${document.id}`, "application/pdf");
+      download(pdfBytes, `${document.contractNumber}`, "application/pdf");
     } else {
       setAlert({
         visible: true,
@@ -176,7 +184,7 @@ const AddPage = () => {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ id: document.id })
+      body: JSON.stringify({ id: document.id, contractNumber: document.contractNumber })
     }).then(res => {
       if (res.status === 200) {
         return res.arrayBuffer();
@@ -186,7 +194,7 @@ const AddPage = () => {
     });
 
     if (pdfBytes) {
-      download(pdfBytes, `RDV-${document.id}_invoice`, "application/pdf");
+      download(pdfBytes, `${document.contractNumber}_invoice`, "application/pdf");
     } else {
       setAlert({
         visible: true,
@@ -196,10 +204,54 @@ const AddPage = () => {
     }
   };
 
+  const onSignClick = () => {
+    setDialogOpen(true);
+  };
+
+  const onSaveSign = (signImage) => {
+    const storageRef = ref(storage, `sign/RDV-${document.id}.png`);
+
+    console.log(signImage)
+    setSaveLoading(true);
+
+    uploadString(storageRef, signImage.split(',')[1], 'base64').then(async (snapshot) => {
+      console.log('Uploaded a base64 string!');
+      const payload = getValues();
+
+      await fetch(`https://ez-be.onrender.com/api/saveDoc`, {
+        method: 'POST',
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...payload,
+          isSigned: true
+        })
+      }).then(_ => {
+        getDocuments();
+        setSaveLoading(false);
+        setDialogOpen(false);
+        setAlert({
+          visible: true,
+          type: 'success',
+          message: 'Signed successfully!'
+        })
+      });
+    });
+  };
+
+  const { contractNumber } = getValues();
+
   if (!Object.keys(document).length) return null;
 
   return (
     <>
+      <SignDialog
+        open={isDialogOpen}
+        onClose={() => setDialogOpen(false)}
+        setImage={onSaveSign}
+        isLoading={isSaveLoading}
+      />
       <Snackbar anchorOrigin={{ vertical: 'top', horizontal: 'center' }} open={alert.visible} autoHideDuration={5000}>
         <Alert onClose={() => setAlert({ visible: false, message: alert.message })} severity={alert.type} sx={{ width: '100%' }}>
           {alert.message}
@@ -207,7 +259,7 @@ const AddPage = () => {
       </Snackbar>
       <Grid container rowSpacing={2.5}>
         <Grid item xs={12} md={12} lg={12}>
-          <Grid container justifyContent="space-between">
+          <Grid sx={{ gap: '10px' }} container justifyContent="space-between">
             <Box
               sx={{
                 display: 'flex',
@@ -215,14 +267,25 @@ const AddPage = () => {
                 gap: '20px'
               }}
             >
-              <Typography variant="h3">Edit document RDV/{id}</Typography>
+              <Typography variant="h3">Edit document #{id}</Typography>
               <OrderStatus status={!!document.isSigned} />
             </Box>
             <Box
               sx={{
                 '& > :not(style)': { margin: '0 4px' },
+                'display': 'flex',
+                'rowGap': '8px',
+                'flexWrap': 'wrap'
               }}
             >
+              <Button
+                disabled={!document.wasSaved || isSaveLoading}
+                startIcon={<DrawIcon />}
+                variant="contained"
+                onClick={onSignClick}
+              >
+                Sign
+              </Button>
               <Button
                 disabled={!document.wasSaved || isSaveLoading}
                 startIcon={<PictureAsPdfIcon />}
@@ -240,6 +303,7 @@ const AddPage = () => {
                 Invoice
               </Button>
               <LoadingButton
+                disabled={!contractNumber}
                 loading={isSaveLoading}
                 color="success"
                 loadingPosition="start"

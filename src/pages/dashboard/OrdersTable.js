@@ -211,8 +211,6 @@ export default function OrderTable() {
     navigate(`/dashboard/documents/${content.id}`)
   };
 
-  console.log(moment('2023-07-15 12:00'))
-
   return (
     <Box>
       <TableContainer
@@ -259,8 +257,8 @@ export default function OrderTable() {
                       {row.id}
                     </Link>
                   </TableCell>
-                  <TableCell align="left">{moment(row.from, DD_MM_YYYY).format(DD_MM_YYYY)}</TableCell>
-                  <TableCell align="left">{moment(row.to, DD_MM_YYYY).format(DD_MM_YYYY)}</TableCell>
+                  <TableCell align="left">{row.from}</TableCell>
+                  <TableCell align="left">{row.to}</TableCell>
                   <TableCell align="left">{row.username}</TableCell>
                   <TableCell align="left">{row.tel}</TableCell>
                   <TableCell align="left">{row.car}</TableCell>

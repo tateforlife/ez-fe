@@ -1,5 +1,3 @@
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import moment from 'moment';
 import {
   Grid,
   Typography,
@@ -8,7 +6,6 @@ import {
 } from '@mui/material';
 import MainCard from '../../../components/MainCard';
 import { Controller } from 'react-hook-form';
-import { DD_MM_YYYY } from 'utils/constants';
 
 const DatesLocations = ({ control }) => {  
     return (
@@ -88,11 +85,10 @@ const DatesLocations = ({ control }) => {
                   render={({
                     field: { onChange, value = '' },
                 }) => (
-                    <DatePicker
-                      views={['year']}
-                      label="Car issue year"
-                      value={value ? moment(value, 'YYYY') : null}
-                      onChange={change => onChange(change.format('YYYY'))}
+                    <TextField
+                      label="Registration pass number"
+                      value={value}
+                      onChange={onChange}
                     />
                 )}
                 />
