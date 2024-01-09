@@ -20,7 +20,7 @@ const SignDialog = (props) => {
             const parent = document.getElementsByClassName('sign-parent')[0];
             const ctx = canvas.getContext('2d')
             ctx.canvas.width = canvas.clientWidth;
-            ctx.canvas.height = canvas.clientHeight;
+            ctx.canvas.height = canvas.clientWidth;
             let coord = { x: 0, y: 0 };
         
             document.addEventListener("mousedown", start);
@@ -68,11 +68,15 @@ const SignDialog = (props) => {
         }
     }, [ref]);
 
-    const handleClose = () => onClose();
+    const handleClose = (event, reason) => {
+        if (reason && reason === "backdropClick") 
+            return;
+        onClose();
+    }
   
     return (
-        <Dialog onClose={handleClose} open={open}>
-            <DialogTitle>Draw a signature</DialogTitle>
+        <Dialog id="dialog228" onClose={handleClose} open={open}>
+            {/* <DialogTitle>Draw a signature</DialogTitle> */}
             <div className='sign-parent'>
                 <canvas ref={ref => setRef(ref)} id="canvas"></canvas>
                 <Grid container columnSpacing={2}>

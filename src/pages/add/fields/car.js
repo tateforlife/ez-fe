@@ -13,12 +13,12 @@ const DatesLocations = ({ control }) => {
         <Box
           component="div"
           sx={{
-            '& > :not(style)': { margin: '8px 0', width: '100%' },
+            '& > :not(style)': { margin: '8px 0 4px', width: '100%' },
           }}
           autoComplete="off"
         >
           <Typography variant="h5">Car</Typography>
-          <Grid container columnSpacing={2}>
+          <Grid container>
             <Grid item xs={12} md={6} lg={6}>
               <Box
                 component="div"
@@ -86,7 +86,7 @@ const DatesLocations = ({ control }) => {
                     field: { onChange, value = '' },
                 }) => (
                     <TextField
-                      label="Registration pass number"
+                      label="Car year"
                       value={value}
                       onChange={onChange}
                     />
@@ -99,6 +99,9 @@ const DatesLocations = ({ control }) => {
                 component="div"
                 sx={{
                   '& > :not(style)': { margin: '8px 0 4px', width: '100%' },
+                  '@media (min-width: 1024px)': {
+                    paddingLeft: '16px'
+                  }
                 }}
                 autoComplete="off"
               >

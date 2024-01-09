@@ -199,7 +199,7 @@ export default function OrderTable() {
   }, []);
 
   const createNewDoc = async (payload) => {
-    const rawResponse = await fetch('https://ez-be.onrender.com/api/createDoc', {
+    const rawResponse = await fetch(`${process.env.REACT_APP_API_BASE}api/createDoc`, {
       method: 'POST',
       headers: {
         "Content-Type": "application/json",

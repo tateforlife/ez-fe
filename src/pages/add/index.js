@@ -134,7 +134,7 @@ const AddPage = () => {
       visible: false,
     }));
 
-    await fetch(`https://ez-be.onrender.com/api/saveDoc`, {
+    await fetch(`${process.env.REACT_APP_API_BASE}api/saveDoc`, {
       method: 'POST',
       headers: {
         "Content-Type": "application/json",
@@ -153,7 +153,7 @@ const AddPage = () => {
 
   const onDownloadContract = async () => {
     console.log(document)
-    const pdfBytes = await fetch('https://ez-be.onrender.com/api/downloadContract', {
+    const pdfBytes = await fetch(`${process.env.REACT_APP_API_BASE}api/downloadContract`, {
       method: 'POST',
       headers: {
         "Content-Type": "application/json",
@@ -179,7 +179,7 @@ const AddPage = () => {
   };
 
   const onDownloadInvoice = async () => {
-    const pdfBytes = await fetch('https://ez-be.onrender.com/api/downloadInvoice', {
+    const pdfBytes = await fetch(`${process.env.REACT_APP_API_BASE}api/downloadInvoice`, {
       method: 'POST',
       headers: {
         "Content-Type": "application/json",
@@ -218,7 +218,7 @@ const AddPage = () => {
       console.log('Uploaded a base64 string!');
       const payload = getValues();
 
-      await fetch(`https://ez-be.onrender.com/api/saveDoc`, {
+      await fetch(`${process.env.REACT_APP_API_BASE}api/saveDoc`, {
         method: 'POST',
         headers: {
           "Content-Type": "application/json",

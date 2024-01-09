@@ -1,4 +1,3 @@
-import moment from 'moment';
 import {
     Typography,
     Box,
@@ -14,12 +13,12 @@ const Driver = ({ control }) => {
         <Box
           component="div"
           sx={{
-            '& > :not(style)': { margin: '8px 0', width: '100%' },
+            '& > :not(style)': { margin: '8px 0 4px', width: '100%' },
           }}
           autoComplete="off"
         >
           <Typography variant="h5">Driver info</Typography>
-          <Grid container columnSpacing={2}>
+          <Grid container sx={{ margin: '0 !important' }}>
             <Grid item xs={12} md={6} lg={6}>
               <Box
                 component="div"
@@ -88,6 +87,9 @@ const Driver = ({ control }) => {
                 component="div"
                 sx={{
                   '& > :not(style)': { margin: '8px 0 4px', width: '100%' },
+                  '@media (min-width: 1024px)': {
+                    paddingLeft: '16px'
+                  }
                 }}
                 autoComplete="off"
               >
@@ -188,6 +190,9 @@ const Driver = ({ control }) => {
                 component="div"
                 sx={{
                   '& > :not(style)': { margin: '8px 0 4px', width: '100%' },
+                  '@media (min-width: 1024px)': {
+                    paddingLeft: '16px'
+                  }
                 }}
                 autoComplete="off"
               >

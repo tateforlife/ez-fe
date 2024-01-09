@@ -18,7 +18,7 @@ const DatesLocations = ({ document, control, delivery, admission }) => {
           }}
           autoComplete="off"
         >
-          <Typography variant="h5">Dates/locations</Typography>
+          <Typography variant="h5" sx={{ marginBottom: '8px !important' }}>Dates/locations</Typography>
           <Controller
             control={control}
             name="contractNumber"
