@@ -50,7 +50,7 @@
   },
   "scripts": {
     "start": "dotenv -e .env.development react-scripts start",
-    "build": "dotenv -e .env react-scripts build",
+    "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
