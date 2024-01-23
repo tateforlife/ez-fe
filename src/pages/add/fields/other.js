@@ -77,7 +77,7 @@ const Other = ({ control }) => {
               field: { onChange, value = '' },
           }) => (
               <TextField
-                label="Language"
+                label="BCF info"
                 value={value}
                 onChange={onChange}
               />

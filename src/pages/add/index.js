@@ -25,7 +25,7 @@ import DatesLocations from './fields/dates';
 import Driver from './fields/driver';
 import Car from './fields/car';
 import Other from './fields/other';
-import { DD_MM_YYYY } from 'utils/constants';
+import Calculations from './fields/calc';
 import Dot from 'components/@extended/Dot';
 import SignDialog from './dialog';
 
@@ -89,7 +89,15 @@ const AddPage = () => {
     getValues,
     watch
   } = useForm();
-  const { delivery, admission } = watch();
+  const inputs = watch();
+  const totalRental = Number(inputs.calcDayPrice || 0) * Number(inputs.calcDaysCount || 0);
+  const totalInsurance = Number(inputs.calcInsuranceDayPrice || 0) * Number(inputs.calcDaysCount || 0);
+  const totalExtra = Number(inputs.calcBcfPrice || 0)
+    + Number(inputs.calcDeliveryPrice || 0)
+    + Number(inputs.calcOOWPrice || 0)
+    + Number(inputs.calcOptionalEquipPrice || 0)
+    + Number(inputs.calcUnlimPrice || 0);
+  const total = totalRental + totalInsurance + totalExtra;
 
   const getDocuments = () => {
     getDocs(collection(db, "documents"))
@@ -107,12 +115,15 @@ const AddPage = () => {
         setValue('to', documentById.to);
         setValue('delivery', Number(documentById.delivery));
         setValue('admission', Number(documentById.admission));
+        setValue('calcDaysCount', moment(documentById.to).diff(moment(documentById.from), 'days'))
       });
   };
 
   React.useEffect(() => {
     getDocuments();
   }, []);
+
+  console.log(inputs)
 
   const onSaveClick = async () => {
     const {customadmission, customdelivery, ...rest} = getValues();
@@ -225,7 +236,8 @@ const AddPage = () => {
         },
         body: JSON.stringify({
           ...payload,
-          isSigned: true
+          isSigned: true,
+          isSignRequest: true,
         })
       }).then(_ => {
         getDocuments();
@@ -325,12 +337,23 @@ const AddPage = () => {
                   <DatesLocations
                     document={document}
                     control={control}
-                    delivery={delivery}
-                    admission={admission}
+                    delivery={inputs.delivery}
+                    admission={inputs.admission}
                   />
                 </Box>
                 <Box sx={{ marginTop: '16px' }}>
                   <Other control={control} />
+                </Box>
+                <Box sx={{ marginTop: '16px' }}>
+                  <Calculations
+                    control={control}
+                    totalRental={totalRental}
+                    totalInsurance={totalInsurance}
+                    totalExtra={totalExtra}
+                    total={total}
+                    setValue={setValue}
+                    inputs={inputs}
+                  />
                 </Box>
               </Grid>
               <Grid item xs={12} md={6} lg={9}>
